@@ -49,12 +49,16 @@ Visualization Manager:
     Fixed Frame: map
     Frame Rate: 30
   Name: root
-  Tools: ~
+  Tools:
+    - Class: rviz/Interact
+      Hide Inactive Objects: true
+    - Class: rviz/MoveCamera
+    - Class: rviz/Select
   Value: true
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 10
+      Distance: 48.13663864135742
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -70,9 +74,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7853981852531433
+      Pitch: 0.6247965693473816
       Target Frame: <Fixed Frame>
-      Yaw: 0.7853981852531433
+      Yaw: 2.36720871925354
     Saved: ~
 Window Geometry:
   Displays:
@@ -83,4 +87,4 @@ Window Geometry:
   QMainWindow State: 000000ff00000000fd00000001000000000000018b0000029afc0200000001fb000000100044006900730070006c006100790073010000003d0000029a000000c900ffffff0000025e0000029a00000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
   Width: 1007
   X: 122
-  Y: 77
+  Y: 40
