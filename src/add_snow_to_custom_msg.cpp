@@ -20,29 +20,51 @@ void addSnowPoints(livox_ros_driver::CustomMsg &msg, int snow_count) {
         adjusted_count = static_cast<int>(snow_count * density / 10.0f);
     }
     
-    // 根据Horizon激光雷达参数调整分布(81.7°H x 25.1°V FOV, 260m范围)
-    const float max_dist = 100.0f; // 实际使用100米范围
-    const float h_range = tan(0.713f) * max_dist; // 81.7°/2=0.713rad
-    const float v_range = tan(0.219f) * max_dist; // 25.1°/2=0.219rad
+    // 使用用户指定的XYZ范围生成雪点(高斯分布)
+    const float x_min = 0.0f, x_max = 143.574f;
+    const float y_min = -55.07f, y_max = 75.186f;
+    const float z_min = -1.765f, z_max = 20.606f;
     
-    std::normal_distribution<float> dist_x(0.0, h_range/2); // 水平方向高斯分布
-    std::normal_distribution<float> dist_y(0.0, h_range/2);
-    std::normal_distribution<float> dist_z(0.0, v_range/2); // 垂直方向高斯分布
-    std::normal_distribution<float> dist_dist(0.0, max_dist/3); // 距离分布
+    // 计算各轴中心和标准差(范围/4)
+    const float x_center = (x_min + x_max) / 2.0f;
+    const float y_center = (y_min + y_max) / 2.0f;
+    const float z_center = (z_min + z_max) / 2.0f;
+    const float x_stddev = (x_max - x_min) / 4.0f;
+    const float y_stddev = (y_max - y_min) / 4.0f;
+    const float z_stddev = (z_max - z_min) / 4.0f;
+    
+    std::normal_distribution<float> dist_x(x_center, x_stddev);
+    std::normal_distribution<float> dist_y(y_center, y_stddev);
+    std::normal_distribution<float> dist_z(z_center, z_stddev);
     std::uniform_int_distribution<int> dist_line(0, 7);
     std::normal_distribution<float> dist_reflect(70, 15); // 雪点反射率集中在70左右
 
     for (int i = 0; i < adjusted_count; ++i) {
         livox_ros_driver::CustomPoint snow_point;
-        float distance = fabs(dist_dist(gen));
-        float angle_h = dist_x(gen)/h_range * 0.713f; // 水平角度(rad)
-        float angle_v = dist_z(gen)/v_range * 0.219f; // 垂直角度(rad)
         
-        snow_point.x = distance * tan(angle_h);
-        snow_point.y = distance * tan(angle_h); // 简化模型
-        snow_point.z = distance * tan(angle_v);
-        snow_point.offset_time = 0.0;          // 可根据需要设置时间偏移
-        snow_point.reflectivity = dist_reflect(gen);
+        // 生成点并确保在范围内
+        do {
+            snow_point.x = dist_x(gen);
+        } while (snow_point.x < x_min || snow_point.x > x_max);
+        
+        do {
+            snow_point.y = dist_y(gen);
+        } while (snow_point.y < y_min || snow_point.y > y_max);
+        
+        do {
+            snow_point.z = dist_z(gen);
+        } while (snow_point.z < z_min || snow_point.z > z_max);
+
+        // offset_time
+        uint32_t max_offset_time = 100142368;  // 100142368
+        static std::default_random_engine gen(std::random_device{}());
+        std::uniform_int_distribution<uint32_t> dist_offset(0, max_offset_time);
+        snow_point.offset_time = dist_offset(gen);
+
+
+        int refl = static_cast<int>(dist_reflect(gen));
+        snow_point.reflectivity = std::max(0, std::min(255, refl)); // 裁减边界
+
         snow_point.line = dist_line(gen);
         snow_point.tag = msg.points[0].tag;    // tag 与原来的点保持一致
 
@@ -69,6 +91,7 @@ int main(int argc, char** argv) {
     ros::NodeHandle nh("~");
 
     std::string outputFile = nh.param<std::string>("outputFile", "/test.bag");
+    ROS_INFO("output path: %s", outputFile.c_str());
     bag.open(outputFile, rosbag::bagmode::Write);
 
     ros::Subscriber sub = nh.subscribe<livox_ros_driver::CustomMsg>(

@@ -35,16 +35,24 @@ catkin_package(
 
 
 add_executable(add_snow_to_custom_msg src/add_snow_to_custom_msg.cpp)
+add_executable(custom_to_pointcloud2 src/custom_to_pointcloud2.cpp)
+add_executable(custom_msg_range_node src/custom_msg_range_node.cpp)
+add_executable(bag_merging src/bag_merging.cpp)
 
 target_link_libraries(add_snow_to_custom_msg 
     ${catkin_LIBRARIES} 
     ${PCL_LIBRARIES}
 )
 
-add_executable(custom_to_pointcloud2 src/custom_to_pointcloud2.cpp)
-
 target_link_libraries(custom_to_pointcloud2 
     ${catkin_LIBRARIES}
 )
 
+target_link_libraries(custom_msg_range_node 
+    ${catkin_LIBRARIES}
+)
+
+target_link_libraries(bag_merging
+    ${catkin_LIBRARIES}
+)
 

@@ -1,0 +1,16 @@
+<launch>
+    <arg name="path" default="/home/dearmoon/datasets/NWU/"/>
+
+    <arg name="scene_0" default="日晴不颠簸低速3/"/>
+    <arg name="scene_1" default="日雪不颠簸高速21/"/> 
+    <arg name="scene_2" default="夜雪不颠簸高速23/"/>
+    <arg name="scene_3" default="日晴不颠簸高速4/"/>
+    <arg name="scene" default="$(arg scene_1)"/>
+
+    <node pkg="add_snow_to_custom_msg" name="bag_merging_snow_adding" type="bag_merging" output="screen">
+        <param name="bag1" value="$(arg path)$(arg scene)21l.bag"/>
+        <param name="bag2" value="$(arg path)$(arg scene)snow_adding/custom_msg_with_snow_adding.bag"/>
+        <param name="output_bag" value="$(arg path)$(arg scene)snow_adding/r3live_input_snow_adding.bag"/>
+    </node>
+
+</launch>
